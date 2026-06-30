@@ -1,14 +1,15 @@
 Dataset link: https://www.kaggle.com/competitions/ieee-fraud-detection/data
 
-##  Project Structure
+## 📂 Project Structure
 
+```text
 IEEE-CIS-Fraud-Detection/
 ├── data/
-│   ├── raw/              # Original CSV files
-│   ├── processed/        # Cleaned data: train.csv, test.csv
-│   └── sample/           # Sample data for demo
-├── docs/                 # Project documentation
-├── notebooks/            # Jupyter notebooks
+│   ├── raw/               # Original CSV files
+│   ├── processed/         # Cleaned data: train.csv, test.csv
+│   └── sample/            # Sample data for demo
+├── docs/                  # Project documentation
+├── notebooks/             # Jupyter notebooks
 │   ├── 01_data_understanding.ipynb     # Load CSV, basic exploration
 │   ├── 02_postgresql_pipeline.ipynb    # PostgreSQL import, join, aggregation
 │   ├── 03_data_cleaning.ipynb          # Handle missing values, outliers
@@ -16,7 +17,7 @@ IEEE-CIS-Fraud-Detection/
 │   ├── 05_feature_engineering.ipynb    # Create new features, insights
 │   ├── 06_machine_learning.ipynb       # Train/Test, model comparison
 │   └── 07_prediction_demo.ipynb        # Load model, prediction demo
-├── sql/                  # SQL scripts
+├── sql/                   # SQL scripts
 │   ├── 01_create_tables.sql
 │   ├── 02_import_data.sql
 │   ├── 03_views.sql
@@ -39,4 +40,3 @@ IEEE-CIS-Fraud-Detection/
 ├── README.md             # Project guide
 ├── Task_Tracker.xlsx     # Task assignment & tracking
 └── requirements.txt      # Python dependencies
-
