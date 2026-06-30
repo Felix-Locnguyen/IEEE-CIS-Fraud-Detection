@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IEEE-CIS Threat Intelligence & Analytics Console</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            cyber: {
+              space: '#05070f',
+              panel: '#0b121f',
+              inner: '#070a12',
+              border: '#1e293b',
+              blue: '#00e5ff',
+              green: '#00e676',
+              red: '#ff3366',
+              amber: '#ffab00'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Tùy biến thanh cuộn mượt mà chuẩn SOC */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #05070f;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #00e5ff;
+    }
+    .active-tab {
+      background-color: rgba(0, 229, 255, 0.05);
+      border-color: rgba(0, 229, 255, 0.2);
+      color: #00e5ff;
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.05);
+    }
+  </style>
+</head>
+<body class="bg-[#05070f] text-slate-100 font-sans h-screen flex overflow-hidden">
+
+  <!-- SIDEBAR - THANH ĐIỀU HƯỚNG BÊN TRÁI -->
+  <aside class="w-72 bg-[#0b121f] border-r border-slate-800 flex flex-col justify-between shrink-0 z-20">
+    <div>
+      <!-- Brand Logo & Radar Animation -->
+      <div class="p-6 border-b border-slate-800 flex items-center gap-3 bg-gradient-to-b from-cyan-950/20 to-transparent">
+        <div class="relative w-10 h-10 border border-cyan-500/30 rounded-full flex items-center justify-center bg-cyan-950/10">
+          <div class="absolute inset-0 rounded-full border border-cyan-400 border-t-transparent border-l-transparent animate-spin" style="animation-duration: 3s;"></div>
+          <i data-lucide="shield-alert" class="h-5 w-5 text-cyan-400"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-xs uppercase tracking-wider text-slate-100 font-mono">IEEE-CIS SIEM</h1>
+          <p class="text-[9px] text-cyan-400 font-bold uppercase tracking-widest font-mono">Threat Intel Console</p>
+        </div>
+      </div>
+
+      <!-- Danh sách Menu chuyển Tab -->
+      <div class="p-4 space-y-1.5">
+        <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Threat Hunting Tools</p>
+        
+        <button onclick="switchTab('dashboard')" id="btn-dashboard" class="active-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-white border border-transparent transition-all duration-200 uppercase font-mono">
+          <i data-lucide="activity" class="h-4 w-4"></i>
+          <span>Security Console</span>
+        </button>
+
+        <button onclick="switchTab('single')" id="btn-single" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-white border border-transparent transition-all duration-200 uppercase font-mono">
+          <i data-lucide="search" class="h-4 w-4"></i>
+          <span>DA Diagnosis Hub</span>
+        </button>
+
+        <button onclick="switchTab('batch')" id="btn-batch" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-white border border-transparent transition-all duration-200 uppercase font-mono">
+          <i data-lucide="database" class="h-4 w-4"></i>
+          <span>Batch Sandbox</span>
+        </button>
+
+        <button onclick="switchTab('copilot')" id="btn-copilot" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-white border border-transparent transition-all duration-200 uppercase font-mono">
+          <i data-lucide="terminal" class="h-4 w-4"></i>
+          <span>AI Threat Intel</span>
+          <span class="ml-auto bg-rose-500/20 text-rose-400 text-[8px] font-bold px-2 py-0.5 rounded-full border border-rose-500/30 uppercase tracking-wider">Critical</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Thông số đánh giá mô hình ML chuyên sâu -->
+    <div class="p-4 border-t border-slate-800 bg-[#05070f]/50">
+      <div class="bg-[#070a12] p-4 rounded-xl border border-slate-800 text-center space-y-1.5">
+        <p class="text-[9px] text-slate-400 uppercase font-bold tracking-widest font-mono">Inference Model Score</p>
+        <p class="text-xl font-black text-emerald-400 font-mono flex items-center justify-center gap-1.5">
+          0.9421 <span class="text-[9px] text-emerald-500 font-bold">▲ +0.02%</span>
+        </p>
+        <div class="flex justify-between text-[9px] text-slate-500 pt-2 border-t border-slate-800 font-mono">
+          <span>XGBoost + CatBoost</span>
+          <span>Loss FPR: 0.02%</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- PHẦN NỘI DUNG CHÍNH (MAIN CONTAINER) -->
+  <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+    
+    <!-- HEADER - THANH ĐẦU TRANG -->
+    <header class="h-16 bg-[#0b121f] border-b border-slate-800 px-8 flex justify-between items-center shrink-0">
+      <div class="flex items-center gap-4">
+        <span class="text-[9px] font-mono bg-cyan-950/40 border border-cyan-500/30 text-cyan-400 px-2 py-1 rounded font-bold">ENVELOPE SYSTEM ACTIVE</span>
+        <h2 id="header-title" class="text-xs font-bold text-slate-100 uppercase tracking-wider font-mono">Hệ thống phân tích rủi ro an ninh tài chính</h2>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <!-- Đèn trạng thái giả lập Live -->
+        <button id="btn-live" onclick="toggleLiveStream()" class="flex items-center gap-2 px-4 py-1.5 rounded-md text-[10px] font-bold font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 transition uppercase tracking-wider">
+          <span id="live-indicator" class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="live-text">Real-time Intel active</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- CONTAINER HIỂN THỊ NỘI DUNG CHI TIẾT -->
+    <div class="flex-1 overflow-y-auto p-8 space-y-6">
+
+      <!-- ================= TAB 1: SECURITY CONSOLE (DASHBOARD) ================= -->
+      <div id="tab-dashboard" class="space-y-6">
+        
+        <!-- Thống kê 4 chỉ số an ninh tài chính -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          
+          <div class="bg-[#0b121f] p-5 rounded-xl border border-slate-800 relative overflow-hidden before:absolute before:top-0 before:left-0 before:w-1 before:h-full before:bg-cyan-400">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">Tổng cảnh báo hệ thống</p>
+                <h3 id="stat-total" class="text-2xl font-black text-slate-100 mt-2 font-mono">1,482,904</h3>
+                <p class="text-[10px] text-emerald-400 font-mono mt-2">▲ +12% so với chu kỳ trước</p>
+              </div>
+              <div class="p-2.5 bg-slate-900 border border-slate-800 rounded-lg text-cyan-400">
+                <i data-lucide="clock" class="h-5 w-5"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-[#0b121f] p-5 rounded-xl border border-slate-800 relative overflow-hidden before:absolute before:top-0 before:left-0 before:w-1 before:h-full before:bg-rose-500">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">Tỷ lệ bất thường đang quét</p>
+                <h3 class="text-2xl font-black text-rose-500 mt-2 font-mono">3.48%</h3>
+                <p class="text-[10px] text-rose-400 font-mono mt-2">Mức độ rủi ro: CAO (CRITICAL)</p>
+              </div>
+              <div class="p-2.5 bg-slate-900 border border-slate-800 rounded-lg text-rose-400">
+                <i data-lucide="shield-alert" class="h-5 w-5"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-[#0b121f] p-5 rounded-xl border border-slate-800 relative overflow-hidden before:absolute before:top-0 before:left-0 before:w-1 before:h-full before:bg-amber-500">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">Độ trễ phản hồi (Inference)</p>
+                <h3 class="text-2xl font-black text-amber-500 mt-2 font-mono">14 ms</h3>
+                <p class="text-[10px] text-slate-400 font-mono mt-2">Thời gian phản hồi phân vị 99</p>
+              </div>
+              <div class="p-2.5 bg-slate-900 border border-slate-800 rounded-lg text-amber-400">
+                <i data-lucide="lock" class="h-5 w-5"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-[#0b121f] p-5 rounded-xl border border-slate-800 relative overflow-hidden before:absolute before:top-0 before:left-0 before:w-1 before:h-full before:bg-emerald-500">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">Thiệt hại đã tránh được</p>
+                <h3 class="text-2xl font-black text-emerald-400 mt-2 font-mono">$4.85M</h3>
+                <p class="text-[10px] text-emerald-400 font-mono mt-2">✓ Tỷ lệ chặn tự động ổn định</p>
+              </div>
+              <div class="p-2.5 bg-slate-900 border border-slate-800 rounded-lg text-emerald-400">
+                <i data-lucide="dollar-sign" class="h-5 w-5"></i>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- KHU VỰC TRỰC QUAN HÓA BIỂU ĐỒ CHUYÊN SÂU (GRAPHS HUB) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- Sóng biến thiên rủi ro real-time -->
+          <div class="bg-[#0b121f] p-6 rounded-xl border border-slate-800 space-y-4">
+            <div>
+              <h4 class="font-bold text-xs uppercase tracking-wider text-slate-100 font-mono flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#00e5ff]"></span>
+                Hành trình biến động rủi ro (Risk Waveform)
+              </h4>
+              <p class="text-[11px] text-slate-400 mt-1">Điểm số rủi ro trung bình được cập nhật liên tục qua sóng SVG</p>
+            </div>
+            <div class="h-52 w-full bg-[#070a12] border border-slate-800/80 rounded-lg overflow-hidden relative p-2">
+              <svg id="live-svg-chart" class="w-full h-full" viewBox="0 0 600 220" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="cyber-gradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.25"></stop>
+                    <stop offset="100%" stop-color="#00e5ff" stop-opacity="0.0"></stop>
+                  </linearGradient>
+                </defs>
+                <path id="svg-fill-area" d="" fill="url(#cyber-gradient)"></path>
+                <path id="svg-line-stroke" d="" fill="none" stroke="#00e5ff" stroke-width="2.5"></path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Phân phối rủi ro theo loại thẻ -->
+          <div class="bg-[#0b121f] p-6 rounded-xl border border-slate-800 space-y-4">
+            <div>
+              <h4 class="font-bold text-xs uppercase tracking-wider text-slate-100 font-mono flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#00e5ff]"></span>
+                Tỷ lệ gian lận theo nhóm thẻ (card4 & card6)
+              </h4>
+              <p class="text-[11px] text-slate-400 mt-1">Phân bổ rủi ro thực tế trên tập mẫu IEEE-CIS</p>
+            </div>
+            <div class="h-52 w-full bg-[#070a12] border border-slate-800/80 rounded-lg overflow-hidden relative p-4">
+              <svg id="card-distribution-chart" class="w-full h-full" viewBox="0 0 600 220" preserveAspectRatio="none">
+                <!-- Grid Lines -->
+                <line x1="50" y1="30" x2="550" y2="30" stroke="#1e293b" stroke-width="1" stroke-dasharray="4,4"></line>
+                <line x1="50" y1="80" x2="550" y2="80" stroke="#1e293b" stroke-width="1" stroke-dasharray="4,4"></line>
+                <line x1="50" y1="130" x2="550" y2="130" stroke="#1e293b" stroke-width="1" stroke-dasharray="4,4"></line>
+                <line x1="50" y1="180" x2="550" y2="180" stroke="#1e293b" stroke-width="1"></line>
+
+                <!-- Y Axis labels -->
+                <text x="35" y="34" fill="#94a3b8" font-family="monospace" font-size="9" text-anchor="end">10.0%</text>
+                <text x="35" y="84" fill="#94a3b8" font-family="monospace" font-size="9" text-anchor="end">5.0%</text>
+                <text x="35" y="134" fill="#94a3b8" font-family="monospace" font-size="9" text-anchor="end">2.5%</text>
+                <text x="35" y="184" fill="#94a3b8" font-family="monospace" font-size="9" text-anchor="end">0%</text>
+
+                <!-- Bars (Visa Credit, MasterCard Credit, Visa Debit, Discover Credit) -->
+                <rect x="90" y="87" width="50" height="93" fill="url(#blue-gradient)" rx="4"></rect>
+                <text x="115" y="77" fill="#00e5ff" font-family="monospace" font-size="10" text-anchor="middle" font-weight="bold">6.2%</text>
+                <text x="115" y="200" fill="#94a3b8" font-size="10" text-anchor="middle">Visa Credit</text>
+
+                <rect x="210" y="99" width="50" height="81" fill="url(#blue-gradient)" rx="4"></rect>
+                <text x="235" y="89" fill="#00e5ff" font-family="monospace" font-size="10" text-anchor="middle" font-weight="bold">5.4%</text>
+                <text x="235" y="200" fill="#94a3b8" font-size="10" text-anchor="middle">MC Credit</text>
+
+                <rect x="330" y="153" width="50" height="27" fill="url(#green-gradient)" rx="4"></rect>
+                <text x="355" y="143" fill="#00e676" font-family="monospace" font-size="10" text-anchor="middle" font-weight="bold">1.8%</text>
+                <text x="355" y="200" fill="#94a3b8" font-size="10" text-anchor="middle">Visa Debit</text>
+
+                <rect x="450" y="46.5" width="50" height="133.5" fill="url(#red-gradient)" rx="4"></rect>
+                <text x="475" y="36" fill="#ff3366" font-family="monospace" font-size="10" text-anchor="middle" font-weight="bold">8.9%</text>
+                <text x="475" y="200" fill="#94a3b8" font-size="10" text-anchor="middle">Discover Cr.</text>
+
+                <defs>
+                  <linearGradient id="blue-gradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#00e5ff"></stop>
+                    <stop offset="100%" stop-color="rgba(0, 229, 255, 0.1)"></stop>
+                  </linearGradient>
+                  <linearGradient id="green-gradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#00e676"></stop>
+                    <stop offset="100%" stop-color="rgba(0, 230, 118, 0.1)"></stop>
+                  </linearGradient>
+                  <linearGradient id="red-gradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#ff3366"></stop>
+                    <stop offset="100%" stop-color="rgba(255, 51, 102, 0.1)"></stop>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Đường cong ROC-AUC -->
+          <div class="bg-[#0b121f] p-6 rounded-xl border border-slate-800 space-y-4">
+            <div>
+              <h4 class="font-bold text-xs uppercase tracking-wider text-slate-100 font-mono flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#00e5ff]"></span>
+                Đường cong ROC-AUC đánh giá mô hình
+              </h4>
+              <p class="text-[11px] text-slate-400 mt-1">Chỉ báo đo lường khả năng phân loại rủi ro (TPR vs FPR)</p>
+            </div>
+            <div class="h-52 w-full bg-[#070a12] border border-slate-800/80 rounded-lg overflow-hidden relative flex items-center justify-center p-2">
+              <svg id="roc-auc-chart" class="w-full h-full max-w-[450px]" viewBox="0 0 600 220">
+                <line x1="50" y1="20" x2="50" y2="180" stroke="#1e293b" stroke-width="1.5"></line>
+                <line x1="50" y1="180" x2="480" y2="180" stroke="#1e293b" stroke-width="1.5"></line>
+                
+                <line x1="50" y1="180" x2="480" y2="20" stroke="#334155" stroke-width="1.5" stroke-dasharray="6,6"></line>
+                <path d="M 50,180 Q 75,30 480,20" fill="none" stroke="#00e676" stroke-width="3" filter="drop-shadow(0px 0px 4px rgba(0, 230, 118, 0.3))"></path>
+
+                <text x="45" y="25" fill="#94a3b8" font-family="monospace" font-size="8" text-anchor="end">1.0 (TPR)</text>
+                <text x="45" y="184" fill="#94a3b8" font-family="monospace" font-size="8" text-anchor="end">0.0</text>
+                <text x="480" y="195" fill="#94a3b8" font-family="monospace" font-size="8" text-anchor="middle">1.0 (FPR)</text>
+                
+                <rect x="260" y="100" width="180" height="50" fill="#070a12" stroke="#1e293b" rx="6"></rect>
+                <text x="275" y="120" fill="#f8fafc" font-size="11" font-weight="700">Mô hình tích hợp ML</text>
+                <text x="275" y="138" fill="#00e676" font-family="monospace" font-size="10" font-weight="bold">AUC: 0.9421 (Xuất sắc)</text>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Feature Importance -->
+          <div class="bg-[#0b121f] p-6 rounded-xl border border-slate-800 space-y-4">
+            <div>
+              <h4 class="font-bold text-xs uppercase tracking-wider text-slate-100 font-mono flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#00e5ff]"></span>
+                Feature Importance (Top Thuộc Tính)
+              </h4>
+              <p class="text-[11px] text-slate-400 mt-1">Tỷ lệ đóng góp chính trong thuật toán LightGBM</p>
+            </div>
+            <div class="h-52 w-full bg-[#070a12] border border-slate-800/80 rounded-lg overflow-hidden relative p-4">
+              <svg id="feature-importance-chart" class="w-full h-full" viewBox="0 0 600 220">
+                <line x1="120" y1="15" x2="120" y2="195" stroke="#1e293b" stroke-width="1.5"></line>
+                
+                <text x="110" y="34" fill="#94a3b8" font-family="monospace" font-size="10" text-anchor="end">TransactionAmt</text>
+                <rect x="120" y="23" width="340" height="15" fill="#00e5ff" rx="2"></rect>
+                <text x="470" y="34" fill="#00e5ff" font-family="monospace" font-size="10" font-weight="bold">100</text>
+
+                <text x="110" y="74" fill="#94a3b8" font-family="monospace" font-size="10" text-anchor="end">card1</text>
+                <rect x="120" y="63" width="280" height="15" fill="#00e5ff" rx="2" opacity="0.95"></rect>
+                <text x="410" y="74" fill="#00e5ff" font-family="monospace" font-size="10" font-weight="bold">82</text>
+
+                <text x="110" y="114" fill="#94a3b8" font-family="monospace" font-size="10" text-anchor="end">C13</text>
+                <rect x="120" y="103" width="230" height="15" fill="#00e5ff" rx="2" opacity="0.85"></rect>
+                <text x="360" y="114" fill="#00e5ff" font-family="monospace" font-size="10" font-weight="bold">68</text>
+
+                <text x="110" y="154" fill="#94a3b8" font-family="monospace" font-size="10" text-anchor="end">P_email</text>
+                <rect x="120" y="143" width="180" height="15" fill="#00e5ff" rx="2" opacity="0.75"></rect>
+                <text x="310" y="154" fill="#00e5ff" font-family="monospace" font-size="10" font-weight="bold">53</text>
+
+                <text x="110" y="194" fill="#94a3b8" font-family="monospace" font-size="10" text-anchor="end">addr1</text>
+                <rect x="120" y="183" width="120" height="15" fill="#00e5ff" rx="2" opacity="0.65"></rect>
+                <text x="250" y="194" fill="#00e5ff" font-family="monospace" font-size="10" font-weight="bold">35</text>
+              </svg>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Layout Ma trận & Log -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <!-- Ma trận nhầm lẫn -->
+          <div class="bg-[#0b121f] p-6 rounded-xl border border-slate-800 space-y-4">
+            <div>
+              <h4 class="font-bold text-xs uppercase tracking-wider text-slate-100 font-mono flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                Model Diagnostics Center
+              </h4>
+              <p class="text-[11px] text-slate-400 mt-1">Đánh giá ma trận nhầm lẫn dựa trên tập kiểm định out-of-bag</p>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-2 text-center font-mono text-[11px] mt-4">
+              <div></div>
+              <div class="font-bold text-slate-400 p-2">Dự đoán Safe</div>
+              <div class="font-bold text-slate-400 p-2">Dự đoán Fraud</div>
+              
+              <div class="font-bold text-slate-400 self-center">Thực tế Safe</div>
+              <div class="bg-[#070a12]/80 border border-emerald-500/20 text-emerald-400 p-3 rounded-lg flex flex-col justify-center">
+                <span class="text-sm font-bold">97.82%</span>
+                <span class="text-[8px] uppercase text-slate-500 mt-1">True Neg</span>
+              </div>
+              <div class="bg-[#070a12]/80 border border-slate-800 text-rose-400 p-3 rounded-lg flex flex-col justify-center">
+                <span class="text-sm font-bold">2.18%</span>
+                <span class="text-[8px] uppercase text-slate-500 mt-1">False Pos</span>
+              </div>
+
+              <div class="font-bold text-slate-400 self-center">Thực tế Fraud</div>
+              <div class="bg-[#070a12]/80 border border-slate-800 text-rose-400 p-3 rounded-lg flex flex-col justify-center">
+                <span class="text-sm font-bold">10.51%</span>
+                <span class="text-[8px] uppercase text-slate-500 mt-1">False Neg</span>
+              </div>
+              <div class="bg-[#070a12]/80 border border-emerald-500/20 text-emerald-400 p-3 rounded-lg flex flex-col justify-center">
+                <span class="text-sm font-bold">89.49%</span>
+                <span class="text-[8px] uppercase text-slate-500 mt-1">True Pos</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bảng log thời gian thực -->
+          <div class="xl:col-span-2 bg-[#0b121f] rounded-xl border border-slate-800 overflow-hidden">
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+              <div>
+                <h4 class="font-bold text-xs uppercase tracking-wider text-slate-100 font-mono flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                  Real-time SIEM Event Log Feed
+                </h4>
+                <p class="text-[11px] text-slate-400 mt-0.5">Mô hình AI quét định lượng các trường Vesta V1-V339, địa chỉ, email và thẻ</p>
+              </div>
+              <button onclick="resetLogs()" class="text-xs flex items-center gap-1.5 text-slate-400 hover:text-white bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800 transition">
+                <i data-lucide="refresh-cw" class="h-3 w-3"></i> RESET EVENTS
+              </button>
+            </div>
+
+            <div class="overflow-x-auto bg-[#070a12]/50">
+              <table class="w-full text-left text-xs border-collapse font-mono">
+                <thead>
+                  <tr class="bg-slate-900/50 text-slate-400 font-bold border-b border-slate-800 uppercase tracking-wider">
+                    <th class="p-4 pl-6">Mã giao dịch</th>
+                    <th class="p-4">Thời gian</th>
+                    <th class="p-4">Số tiền</th>
+                    <th class="p-4">Nhóm Thẻ</th>
+                    <th class="p-4">Email</th>
+                    <th class="p-4">Cảnh báo SIEM</th>
+                    <th class="p-4">Mức độ rủi ro</th>
+                    <th class="p-4 pr-6">Kết luận AI</th>
+                  </tr>
+                </thead>
+                <tbody id="live-table-body" class="divide-y divide-slate-800 text-slate-300">
+                  <!-- Nội dung danh sách giao dịch sẽ chèn động bằng JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= TAB 2: KIỂM TRA ĐƠN LẺ ================= -->
+      <div id="tab-single" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        
+        <!-- Form nhập dữ liệu -->
+        <div class="lg:col-span-2 bg-[#0b121f] rounded-xl border border-slate-800 p-6 shadow-sm space-y-6">
+          <div class="border-b border-slate-800 pb-4">
+            <h4 class="font-bold text-xs uppercase tracking-wider text-slate-100 font-mono">Model Inference Testing - Explanatory Sandbox</h4>
+            <p class="text-[11px] text-slate-400 mt-1">Khai thác kiểm định nhanh mô phỏng dòng lỗi dữ liệu qua mô hình Ensemble Stack.</p>
+          </div>
+
+          <form id="single-predict-form" class="space-y-4 text-xs font-mono">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+              <div class="flex flex-col gap-1.5">
+                <label class="text-slate-400 font-bold uppercase tracking-wider text-[9px]">TransactionAmt (Số tiền giao dịch)</label>
+                <input 
+                  type="number" 
+                  id="inp-amount" 
+                  value="120.00" 
+                  class="w-full bg-[#070a12] border border-slate-800 rounded-lg px-3.5 py-2.5 text-slate-200 focus:outline-none focus:border-cyan-400 transition"
+                  required
+                />
+              </div>
+              
+              <div class="flex flex-col gap-1.5">
+                <label class="text-slate-400 font-bold uppercase tracking-wider text-[9px]">ProductCD (Danh mục sản phẩm)</label>
+                <select id="inp-product" class="w-full bg-[#070a12] border border-slate-800 rounded-lg px-3.5 py-2.5 text-slate-200 focus:outline-none focus:border-cyan-400 transition">
+                  <option value="W">W - Web Service</option>
+                  <option value="H">H - Hotel / Leisure</option>
+                  <option value="C">C - Internal Credits</option>
+                </select>
+              </div>
+
+              <div class="flex flex-col gap-1.5">
+                <label class="text-slate-400 font-bold uppercase tracking-wider text-[9px]">card1 (Mã hóa nhóm thẻ - Group ID)</label>
+                <input 
+                  type="text" 
+                  id="inp-card1" 
+                  value="13926" 
+                  class="w-full bg-[#070a12] border border-slate-800 rounded-lg px-3.5 py-2.5 text-slate-200 focus:outline-none focus:border-cyan-400 transition"
+                />
+              </div>
+
+              <div class="flex flex-col gap-1.5">
+                <label class="text-slate-400 font-bold uppercase tracking-wider text-[9px]">card4 (Hãng phát hành)</label>
+                <select id="inp-card4" class="w-full bg-[#070a12] border border-slate-800 rounded-lg px-3.5 py-2.5 text-slate-200 focus:outline-none focus:border-cyan-400 transition">
+                  <option value="visa">Visa</option>
+                  <option value="mastercard">Mastercard</option>
+                  <option value="discover">Discover</option>
+                </select>
+              </div>
+
+              <div class="flex flex-col gap-1.5">
+                <label class="text-slate-400 font-bold uppercase tracking-wider text-[9px]">card6 (Loại thẻ)</label>
+                <select id="inp-card6" class="w-full bg-[#070a12] border border-slate-800 rounded-lg px-3.5 py-2.5 text-slate-200 focus:outline-none focus:border-cyan-400 transition">
+                  <option value="debit">Debit (Thẻ ghi nợ)</option>
+                  <option value="credit">Credit (Thẻ tín dụng)</option>
+                </select>
+              </div>
+
+              <div class="flex flex-col gap-1.5">
+                <label class="text-slate-400 font-bold uppercase tracking-wider text-[9px]">P_emaildomain (Email domain mua)</label>
+                <input 
+                  type="text" 
+                  id="inp-email" 
+                  value="gmail.com" 
+                  class="w-full bg-[#070a12] border border-slate-800 rounded-lg px-3.5 py-2.5 text-slate-200 focus:outline-none focus:border-cyan-400 transition"
+                />
+              </div>
+            </div>
+
+            <button 
+              type="submit"
+              class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold py-3 rounded-lg text-xs transition shadow-md shadow-cyan-400/10 flex items-center justify-center gap-2 uppercase"
+            >
+              <i data-lucide="shield-check" class="h-4 w-4"></i>
+              <span>Thực thi định lượng & Dự đoán</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Kết quả chẩn đoán mô phỏng SHAP Force Plot -->
+        <div class="bg-[#0b121f] rounded-xl border border-slate-800 p-6 flex flex-col justify-between min-h-[440px]">
+          <div id="predict-result-container">
+            <h4 class="font-bold text-xs uppercase tracking-wider text-slate-100 font-mono mb-4">Explainable AI Threat Intel</h4>
+            
+            <!-- Trạng thái chờ -->
+            <div id="predict-placeholder" class="text-center py-20 text-slate-500 space-y-4">
+              <div class="p-3 bg-[#070a12] rounded-full inline-block border border-slate-800">
+                <i data-lucide="cpu" class="h-8 w-8 text-slate-600"></i>
+              </div>
+              <p class="text-[11px] max-w-[200px] mx-auto leading-relaxed">Điền dữ liệu sandbox của giao dịch bên trái để hiển thị biểu đồ lực đẩy SHAP.</p>
+            </div>
+
+            <!-- Trạng thái Loading -->
+            <div id="predict-loading" class="hidden text-center py-20 text-slate-400 space-y-3">
+              <i data-lucide="refresh-cw" class="h-8 w-8 text-cyan-400 animate-spin mx-auto"></i>
+              <p class="text-[11px] font-mono text-slate-500">Evaluating shapley feature weights...</p>
+            </div>
+
+            <!-- Trạng thái hiển thị kết quả -->
+            <div id="predict-content" class="hidden space-y-6">
+              
+              <!-- Thẻ Trạng thái lớn -->
+              <div id="result-badge-card" class="p-4 rounded-xl border text-center space-y-1">
+                <p class="text-[9px] uppercase font-bold tracking-widest text-slate-400 font-mono">System Resolution</p>
+                <h4 id="result-decision" class="text-xs font-bold uppercase font-mono">APPROVED</h4>
+                <p class="text-[11px] font-mono mt-1">Confidence Level: <span id="result-score">5%</span></p>
+              </div>
+
+              <!-- Đóng góp thuộc tính (Giải thích SHAP Waterfall) -->
+              <div class="space-y-3">
+                <p class="text-[9px] uppercase font-bold text-slate-400 font-mono">SHAP Feature Force Vector:</p>
+                <div id="shap-list" class="space-y-3">
+                  <!-- Được render động bằng JS -->
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Dataset Characteristics (NaN ratio) -->
+          <div class="pt-4 border-t border-slate-800 text-[10px] space-y-2 text-slate-400">
+            <p class="text-[9px] uppercase font-bold text-slate-400 font-mono">Missing Values (NaN Ratio) Ingested</p>
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <div class="w-12 text-[9px] font-mono">card2</div>
+                <div class="flex-1 bg-[#070a12] h-1.5 rounded-full overflow-hidden">
+                  <div class="bg-amber-500 h-full" style="width: 1.5%;"></div>
+                </div>
+                <div class="w-8 text-right text-[9px] font-mono">1.5%</div>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-12 text-[9px] font-mono">P_email</div>
+                <div class="flex-1 bg-[#070a12] h-1.5 rounded-full overflow-hidden">
+                  <div class="bg-amber-500 h-full" style="width: 15.2%;"></div>
+                </div>
+                <div class="w-8 text-right text-[9px] font-mono">15.2%</div>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-12 text-[9px] font-mono">Vesta_V</div>
+                <div class="flex-1 bg-[#070a12] h-1.5 rounded-full overflow-hidden">
+                  <div class="bg-amber-500 h-full" style="width: 53.8%;"></div>
+                </div>
+                <div class="w-8 text-right text-[9px] font-mono">53.8%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= TAB 3: QUÉT TỆP HÀNG LOẠT ================= -->
+      <div id="tab-batch" class="hidden max-w-3xl mx-auto space-y-6">
+        
+        <div class="bg-[#0b121f] rounded-xl border border-slate-800 p-8 shadow-sm text-center space-y-4">
+          <div class="mx-auto w-12 h-12 bg-cyan-950/40 border border-cyan-500/30 text-cyan-400 rounded-full flex items-center justify-center">
+            <i data-lucide="upload" class="h-6 w-6"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-xs uppercase tracking-wider text-slate-100 font-mono">Threat Hunting Batch Ingestion</h4>
+            <p class="text-[11px] text-slate-400 mt-1">Xử lý tệp kiểm tra rủi ro hàng loạt. Tự động tiền xử lý dữ liệu bị rỗng và chuyển hóa Encoder.</p>
+          </div>
+
+          <!-- Dropzone tệp tải lên -->
+          <div class="border-2 border-dashed border-slate-800 hover:border-cyan-500/50 bg-[#070a12] rounded-xl p-8 cursor-pointer relative group transition-colors">
+            <input 
+              type="file" 
+              id="batch-file-input"
+              accept=".csv,.xlsx" 
+              class="absolute inset-0 opacity-0 cursor-pointer" 
+              onchange="handleFileChange(event)"
+            />
+            <div id="file-upload-placeholder" class="text-xs text-slate-400 space-y-1 font-mono">
+              <p class="font-bold text-slate-300">Bấm hoặc kéo thả file CSV mẫu vào khu vực này</p>
+              <p class="text-[10px] text-slate-500">Hệ thống rà soát an ninh xử lý tối đa 50,000 bản ghi</p>
+            </div>
+            <div id="file-upload-success" class="hidden text-xs text-cyan-400 font-mono">
+              <i data-lucide="file-spreadsheet" class="h-8 w-8 mx-auto mb-2 text-cyan-400"></i>
+              <p class="font-bold text-slate-200" id="uploaded-file-name">filename.csv</p>
+              <p class="text-[10px] text-slate-500 mt-1" id="uploaded-file-size">42 KB</p>
+            </div>
+          </div>
+
+          <div id="batch-action-container" class="hidden justify-center pt-2">
+            <button 
+              id="btn-run-batch"
+              onclick="startBatchProcessing()"
+              class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold py-2.5 px-6 rounded-lg text-xs transition flex items-center gap-2 shadow-sm font-mono uppercase"
+            >
+              <i data-lucide="cpu" class="h-4 w-4"></i>
+              <span>Khởi chạy Batch Pipeline</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Trạng thái Quét tệp Loading Pipeline -->
+        <div id="batch-loading" class="hidden bg-[#0b121f] rounded-xl border border-slate-800 p-8 shadow-sm">
+          <div class="flex flex-col items-center gap-4">
+            <div class="w-10 h-10 border-2 border-slate-800 border-t-cyan-400 rounded-full animate-spin"></div>
+            <div class="w-full max-w-md space-y-3 font-mono text-[11px] text-left">
+              <div id="step-1" class="flex items-center gap-3 text-cyan-400 font-bold">
+                <span class="w-2.5 h-2.5 rounded-full border-2 border-cyan-400 bg-cyan-400"></span>
+                <span>Bước 1: Chuẩn hóa Schema và kiểm tra rỗng (NaN Imputation)</span>
+              </div>
+              <div id="step-2" class="flex items-center gap-3 text-slate-500">
+                <span class="w-2.5 h-2.5 rounded-full border-2 border-slate-800"></span>
+                <span>Bước 2: Vector hóa & Frequency Encoding card1-card6</span>
+              </div>
+              <div id="step-3" class="flex items-center gap-3 text-slate-500">
+                <span class="w-2.5 h-2.5 rounded-full border-2 border-slate-800"></span>
+                <span>Bước 3: Chạy dự toán song song đa luồng XGBoost Predictor</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kết quả tệp quét -->
+        <div id="batch-results-container" class="hidden bg-[#0b121f] rounded-xl border border-slate-800 p-6 shadow-sm space-y-5 animate-fadeIn">
+          
+          <!-- Tóm tắt số liệu quét -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center font-mono">
+            <div class="bg-[#070a12] p-3.5 rounded-xl border border-slate-800">
+              <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Tổng giao dịch quét</p>
+              <p class="text-lg font-bold mt-1 text-slate-200" id="batch-total-scanned">1,200</p>
+            </div>
+            <div class="bg-rose-950/20 p-3.5 rounded-xl border border-rose-900/30 text-rose-400">
+              <p class="text-[9px] text-rose-500 font-bold uppercase tracking-wider">Gian lận (Block)</p>
+              <p class="text-lg font-bold mt-1 animate-pulse" id="batch-fraud-count">42</p>
+            </div>
+            <div class="bg-amber-950/20 p-3.5 rounded-xl border border-amber-900/30 text-amber-400">
+              <p class="text-[9px] text-amber-500 font-bold uppercase tracking-wider">Nghi vấn (Review)</p>
+              <p class="text-lg font-bold mt-1" id="batch-review-count">85</p>
+            </div>
+            <div class="bg-emerald-950/20 p-3.5 rounded-xl border border-emerald-900/30 text-emerald-400">
+              <p class="text-[9px] text-emerald-500 font-bold uppercase tracking-wider">Thời gian xử lý</p>
+              <p class="text-lg font-bold mt-1" id="batch-time">0.85s</p>
+            </div>
+          </div>
+
+          <!-- Bảng xem trước lỗi -->
+          <div class="space-y-3">
+            <div class="flex justify-between items-center">
+              <h5 class="font-bold text-xs uppercase tracking-wider text-slate-100 font-mono">Các giao dịch phát hiện rủi ro cao</h5>
+              <button class="text-xs bg-[#070a12] text-cyan-400 hover:text-white px-3 py-1.5 rounded border border-cyan-500/30 font-mono flex items-center gap-1">
+                <i data-lucide="download" class="h-3.5 w-3.5"></i> XUẤT FILE SIEM ALERTS
+              </button>
+            </div>
+
+            <div class="border border-slate-800 rounded-xl overflow-hidden">
+              <table class="w-full text-left text-xs text-slate-300 font-mono">
+                <thead class="bg-[#070a12] text-slate-400 border-b border-slate-800 font-bold">
+                  <tr>
+                    <th class="p-3 pl-4">Dòng tệp</th>
+                    <th class="p-3">Mã Giao Dịch</th>
+                    <th class="p-3">Số tiền (USD)</th>
+                    <th class="p-3">Hãng phát hành</th>
+                    <th class="p-3">Rủi ro (Score)</th>
+                    <th class="p-3 text-right pr-4">Cảnh báo</th>
+                  </tr>
+                </thead>
+                <tbody id="batch-preview-tbody" class="divide-y divide-slate-800">
+                  <!-- Render động bằng JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ================= TAB 4: TRỢ LÝ AI COPILOT ================= -->
+      <div id="tab-copilot" class="hidden max-w-3xl mx-auto h-[550px] flex flex-col bg-[#0b121f] rounded-xl border border-slate-800 shadow-sm overflow-hidden">
+        
+        <!-- Header hộp hội thoại -->
+        <div class="p-4 bg-slate-900/50 border-b border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-cyan-950/40 border border-cyan-500/30 text-cyan-400 rounded-lg">
+              <i data-lucide="terminal" class="h-4 w-4"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-xs text-slate-100 font-mono">IEEE-CIS Threat Intel Copilot</h4>
+              <p class="text-[10px] text-slate-400 font-mono">Hỗ trợ tra cứu cấu trúc trường dữ liệu, kỹ thuật Feature Engineering & Tuning</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Khung hiển thị cuộc hội thoại -->
+        <div id="chat-messages-container" class="flex-1 overflow-y-auto p-6 space-y-4">
+          <!-- Các tin nhắn sẽ hiển thị tại đây -->
+        </div>
+
+        <!-- Nhãn Gợi ý câu hỏi nhanh -->
+        <div class="px-6 py-2 bg-slate-900/30 border-t border-slate-800 flex flex-wrap gap-2">
+          <span class="text-[9px] text-slate-500 self-center font-bold tracking-wider font-mono">QUY QUYẾT NHANH:</span>
+          
+          <button onclick="sendQuickQuestion('Ý nghĩa các biến card1 - card6 trong IEEE-CIS là gì?')" class="text-[10px] bg-[#070a12] hover:bg-slate-850 text-slate-400 border border-slate-800 px-2.5 py-1 rounded-lg transition-colors font-mono">
+            Biến card1 - card6?
+          </button>
+          
+          <button onclick="sendQuickQuestion('Phương án xử lý sự bất cân bằng cực đoan dữ liệu?')" class="text-[10px] bg-[#070a12] hover:bg-slate-850 text-slate-400 border border-slate-800 px-2.5 py-1 rounded-lg transition-colors font-mono">
+            Imbalanced Data?
+          </button>
+
+          <button onclick="sendQuickQuestion('Giải thích ý nghĩa và cách xử lý các biến V1-V339?')" class="text-[10px] bg-[#070a12] hover:bg-slate-850 text-slate-400 border border-slate-800 px-2.5 py-1 rounded-lg transition-colors font-mono">
+            Vesta V1-V339 Features?
+          </button>
+        </div>
+
+        <!-- Ô nhập câu hỏi và nút gửi -->
+        <form id="chat-input-form" onsubmit="handleSendChatMessage(event)" class="p-4 bg-[#070a12] border-t border-slate-800 flex gap-2">
+          <input 
+            type="text" 
+            id="chat-input-field"
+            placeholder="Hỏi Copilot về Feature Engineering, mã hóa target, siêu tham số, hoặc biến V ẩn..."
+            class="flex-1 bg-[#0b121f] border border-slate-800 rounded-lg px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-400 font-mono"
+          />
+          <button 
+            type="submit"
+            class="bg-cyan-400 hover:bg-cyan-300 text-slate-950 p-2.5 rounded-lg transition-colors flex items-center justify-center shadow-sm"
+          >
+            <i data-lucide="send" class="h-4 w-4"></i>
+          </button>
+        </form>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- LẬP TRÌNH LOGIC TƯƠNG TÁC (VANILLA JS THUẦN) -->
+  <script>
+    // Dữ liệu mẫu ban đầu cho danh sách giao dịch
+    let transactionsData = [
+      { id: "4029102", amount: 150.00, product: "W", cardType: "Visa Debit", email: "gmail.com", riskScore: 0.12, status: "Safe", alertType: "NORMAL_PATTERN", timestamp: "18:45:22" },
+      { id: "4029103", amount: 2450.00, product: "H", cardType: "Mastercard Credit", email: "anonymous.com", riskScore: 0.94, status: "Fraud", alertType: "ALERT_GEO_IP_MISMATCH", timestamp: "18:43:10" },
+      { id: "4029104", amount: 89.99, product: "W", cardType: "Visa Debit", email: "yahoo.com", riskScore: 0.04, status: "Safe", alertType: "NORMAL_PATTERN", timestamp: "18:39:55" },
+      { id: "4029105", amount: 1200.00, product: "C", cardType: "Discover Credit", email: "outlook.com", riskScore: 0.78, status: "Fraud", alertType: "RULE_VPN_PROX_HIGH", timestamp: "18:35:01" },
+      { id: "4029106", amount: 15.50, product: "W", cardType: "Mastercard Debit", email: "gmail.com", riskScore: 0.01, status: "Safe", alertType: "NORMAL_PATTERN", timestamp: "18:30:14" },
+    ];
+
+    // Tạo mảng dữ liệu mô phỏng biến đổi rủi ro theo biểu đồ sóng rủi ro (Risk Waveform)
+    let chartData = [35, 45, 38, 55, 42, 60, 48, 70, 52, 65, 58, 72, 50, 68, 80, 55, 62, 74, 90, 65];
+
+    // Trạng thái các luồng hoạt động
+    let isLiveActive = true;
+    let liveIntervalId = null;
+
+    // Tin nhắn khởi tạo của Trợ lý AI
+    let chatMessages = [
+      { role: 'assistant', text: 'Xin chào! Tôi là Trợ lý phân tích an ninh IEEE-CIS. Tôi có thể giải thích chi tiết ý nghĩa các trường dữ liệu và các chiến lược Feature Engineering hàng đầu để đạt điểm AUC 0.94+!' }
+    ];
+
+    // HÀM CHUYỂN ĐỔI TAB GIAO DIỆN
+    function switchTab(tabName) {
+      // Ẩn tất cả các Tab
+      document.getElementById('tab-dashboard').classList.add('hidden');
+      document.getElementById('tab-single').classList.add('hidden');
+      document.getElementById('tab-batch').classList.add('hidden');
+      document.getElementById('tab-copilot').classList.add('hidden');
+
+      // Bỏ class Active cho tất cả nút menu bên trái
+      document.getElementById('btn-dashboard').classList.remove('active-tab');
+      document.getElementById('btn-single').classList.remove('active-tab');
+      document.getElementById('btn-batch').classList.remove('active-tab');
+      document.getElementById('btn-copilot').classList.remove('active-tab');
+
+      // Hiển thị Tab được nhấp chuột và kích hoạt nút
+      document.getElementById('tab-' + tabName).classList.remove('hidden');
+      document.getElementById('btn-' + tabName).classList.add('active-tab');
+
+      // Đổi tiêu đề Header đầu trang phù hợp
+      let headerTitle = document.getElementById('header-title');
+      if (tabName === 'dashboard') headerTitle.innerText = "Hệ thống phân tích rủi ro an ninh tài chính";
+      if (tabName === 'single') headerTitle.innerText = "Data Analyst Hub - Chẩn đoán sâu giao dịch";
+      if (tabName === 'batch') headerTitle.innerText = "Thực thi kiểm định tệp Sandbox hàng loạt";
+      if (tabName === 'copilot') headerTitle.innerText = "Trợ lý an ninh AI Threat Intelligence";
+    }
+
+    // DRAW DYNAMIC LINE & AREA SVG RISK TRENDWAVE
+    function drawRealtimeChart() {
+      const svg = document.getElementById('live-svg-chart');
+      const areaPath = document.getElementById('svg-fill-area');
+      const linePath = document.getElementById('svg-line-stroke');
+      if (!svg || !areaPath || !linePath) return;
+
+      const width = 600;
+      const height = 220;
+      const paddingY = 20;
+
+      const stepX = width / (chartData.length - 1);
+      const maxVal = Math.max(...chartData, 100);
+      const minVal = 0;
+
+      let points = [];
+      for (let i = 0; i < chartData.length; i++) {
+        const x = i * stepX;
+        const y = height - paddingY - ((chartData[i] - minVal) / (maxVal - minVal)) * (height - 2 * paddingY);
+        points.push({ x, y });
+      }
+
+      // Vẽ đường Line biểu đồ sử dụng Cubic Bezier cho đường cong mềm mại
+      let lineD = `M ${points[0].x},${points[0].y}`;
+      for (let i = 1; i < points.length; i++) {
+        const cpX1 = points[i-1].x + stepX / 2;
+        const cpY1 = points[i-1].y;
+        const cpX2 = points[i].x - stepX / 2;
+        const cpY2 = points[i].y;
+        lineD += ` C ${cpX1},${cpY1} ${cpX2},${cpY2} ${points[i].x},${points[i].y}`;
+      }
+      linePath.setAttribute('d', lineD);
+
+      // Điền kín vùng Gradient nằm phía dưới đường sóng
+      let areaD = lineD + ` L ${width},${height} L 0,${height} Z`;
+      areaPath.setAttribute('d', areaD);
+    }
+
+    // MÔ PHỎNG DÒNG DỮ LIỆU CHẠY REAL-TIME (DASHBOARD)
+    function renderLiveTransactions() {
+      const tbody = document.getElementById('live-table-body');
+      tbody.innerHTML = '';
+
+      transactionsData.forEach(txn => {
+        let statusBadge = '';
+        if (txn.status === 'Safe') {
+          statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">✓ Secure</span>`;
+        } else if (txn.status === 'Review') {
+          statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">⚠ Review</span>`;
+        } else {
+          statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">✗ Blocked</span>`;
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/10 transition';
+        tr.innerHTML = `
+          <td class="p-4 pl-6 font-semibold text-cyan-400">${txn.id}</td>
+          <td class="p-4 text-slate-400 font-mono text-[11px]">${txn.timestamp}</td>
+          <td class="p-4 font-bold text-slate-100">$${txn.amount.toFixed(2)}</td>
+          <td class="p-4"><span class="px-2 py-0.5 bg-slate-900 border border-slate-800 text-slate-400 rounded font-semibold text-[10px]">${txn.product}</span></td>
+          <td class="p-4 text-slate-300 font-semibold">${txn.cardType}</td>
+          <td class="p-4 text-slate-400 font-mono">${txn.email}</td>
+          <td class="p-4 text-slate-400 text-xs">${txn.alertType || 'NORMAL_PATTERN'}</td>
+          <td class="p-4">
+            <div class="flex items-center gap-1.5">
+              <span class="font-bold text-slate-200 font-mono">${(txn.riskScore * 100).toFixed(0)}%</span>
+            </div>
+          </td>
+          <td class="p-4 pr-6">${statusBadge}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      // Vẽ lại các Icon Lucide
+      lucide.createIcons();
+    }
+
+    // Bật/Tắt dòng tự động cập nhật
+    function toggleLiveStream() {
+      isLiveActive = !isLiveActive;
+      const btn = document.getElementById('btn-live');
+      const indicator = document.getElementById('live-indicator');
+      const text = document.getElementById('live-text');
+
+      if (isLiveActive) {
+        btn.className = "flex items-center gap-2 px-4 py-1.5 rounded-md text-[10px] font-bold font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 transition uppercase tracking-wider";
+        indicator.className = "h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse";
+        text.innerText = "Real-time Intel active";
+        startLiveInterval();
+      } else {
+        btn.className = "flex items-center gap-2 px-4 py-1.5 rounded-md text-[10px] font-bold font-mono bg-slate-800 text-slate-500 border border-slate-700 transition uppercase tracking-wider";
+        indicator.className = "h-2.5 w-2.5 rounded-full bg-slate-500";
+        text.innerText = "Feed Paused";
+        clearInterval(liveIntervalId);
+      }
+    }
+
+    function startLiveInterval() {
+      liveIntervalId = setInterval(() => {
+        const randomId = Math.floor(4000000 + Math.random() * 100000);
+        const randomAmt = (Math.random() * 1200 + 5).toFixed(2);
+        const products = ["W", "H", "C", "R"];
+        const cards = ["Visa Debit", "Mastercard Credit", "Visa Credit"];
+        const emails = ["gmail.com", "yahoo.com", "anonymous.com", "protonmail.com"];
+        const alerts = ["NORMAL_PATTERN", "ALERT_GEO_IP_MISMATCH", "RULE_VPN_PROX_HIGH", "MODEL_HIGH_VELOCITY_C1"];
+        
+        const randomProduct = products[Math.floor(Math.random() * products.length)];
+        const randomCard = cards[Math.floor(Math.random() * cards.length)];
+        const randomEmail = emails[Math.floor(Math.random() * emails.length)];
+        const randomAlert = alerts[Math.floor(Math.random() * alerts.length)];
+        
+        // Mô phỏng chấm điểm rủi ro cơ bản
+        let score = Math.random() * 0.35;
+        if (parseFloat(randomAmt) > 800) score += 0.40;
+        if (randomEmail === "anonymous.com" || randomAlert === "RULE_VPN_PROX_HIGH") score += 0.30;
+        score = Math.min(score, 0.99);
+
+        let status = "Safe";
+        if (score > 0.65) status = "Fraud";
+        else if (score > 0.35) status = "Review";
+
+        const now = new Date();
+        const timestamp = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+
+        const newTxn = {
+          id: randomId,
+          amount: parseFloat(randomAmt),
+          product: randomProduct,
+          cardType: randomCard,
+          email: randomEmail,
+          riskScore: parseFloat(score.toFixed(2)),
+          status: status,
+          alertType: randomAlert,
+          timestamp: timestamp
+        };
+
+        transactionsData = [newTxn, ...transactionsData.slice(0, 4)];
+        
+        // Cập nhật sóng biểu đồ
+        let nextChartPoint = Math.floor(Math.random() * 60 + 20);
+        if (status === 'Fraud') nextChartPoint += 30;
+        chartData.push(nextChartPoint);
+        chartData = chartData.slice(1);
+
+        // Tăng giả lập tổng số giao dịch đã quét
+        const totalNode = document.getElementById('stat-total');
+        let currentTotal = parseInt(totalNode.innerText.replace(/,/g, ''));
+        totalNode.innerText = (currentTotal + 1).toLocaleString();
+
+        renderLiveTransactions();
+        drawRealtimeChart();
+      }, 4000);
+    }
+
+    function resetLogs() {
+      transactionsData = [
+        { id: "4029102", amount: 150.00, product: "W", cardType: "Visa Debit", email: "gmail.com", riskScore: 0.12, status: "Safe", alertType: "NORMAL_PATTERN", timestamp: "18:45:22" },
+        { id: "4029103", amount: 2450.00, product: "H", cardType: "Mastercard Credit", email: "anonymous.com", riskScore: 0.94, status: "Fraud", alertType: "ALERT_GEO_IP_MISMATCH", timestamp: "18:43:10" },
+        { id: "4029104", amount: 89.99, product: "W", cardType: "Visa Debit", email: "yahoo.com", riskScore: 0.04, status: "Safe", alertType: "NORMAL_PATTERN", timestamp: "18:39:55" },
+        { id: "4029105", amount: 1200.00, product: "C", cardType: "Discover Credit", email: "outlook.com", riskScore: 0.78, status: "Fraud", alertType: "RULE_VPN_PROX_HIGH", timestamp: "18:35:01" },
+        { id: "4029106", amount: 15.50, product: "W", cardType: "Mastercard Debit", email: "gmail.com", riskScore: 0.01, status: "Safe", alertType: "NORMAL_PATTERN", timestamp: "18:30:14" },
+      ];
+      renderLiveTransactions();
+    }
+
+    // MÔ PHỎNG KIỂM TRA GIAO DỊCH ĐƠN LẺ
+    document.getElementById('single-predict-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Hiện trạng thái Loading
+      document.getElementById('predict-placeholder').classList.add('hidden');
+      document.getElementById('predict-content').classList.add('hidden');
+      document.getElementById('predict-loading').classList.remove('hidden');
+
+      // Giả lập xử lý model 1.5 giây
+      setTimeout(() => {
+        const amt = parseFloat(document.getElementById('inp-amount').value);
+        const product = document.getElementById('inp-product').value;
+        const card4 = document.getElementById('inp-card4').value;
+        const card6 = document.getElementById('inp-card6').value;
+        const email = document.getElementById('inp-email').value;
+
+        const isHighAmt = amt > 1000;
+        const isSuspiciousEmail = email === 'anonymous.com';
+        const isCreditHigh = card6 === 'credit' && amt > 400;
+
+        let baseScore = 0.05;
+        let shapContributions = [];
+
+        if (isHighAmt) {
+          baseScore += 0.50;
+          shapContributions.push({ name: "TransactionAmt (Giao dịch cực đại)", impact: "+50%", color: "bg-rose-500", type: 'push', textCol: 'text-rose-400' });
+        } else {
+          shapContributions.push({ name: "TransactionAmt (Ngưỡng an toàn)", impact: "-12%", color: "bg-emerald-500", type: 'pull', textCol: 'text-emerald-400' });
+        }
+
+        if (isSuspiciousEmail) {
+          baseScore += 0.35;
+          shapContributions.push({ name: "P_emaildomain (Email ẩn danh rủi ro)", impact: "+35%", color: "bg-rose-500", type: 'push', textCol: 'text-rose-400' });
+        } else {
+          shapContributions.push({ name: "P_emaildomain (Email hệ thống sạch)", impact: "-15%", color: "bg-emerald-500", type: 'pull', textCol: 'text-emerald-400' });
+        }
+
+        if (isCreditHigh) {
+          baseScore += 0.20;
+          shapContributions.push({ name: "card6 (Sử dụng thẻ tín dụng)", impact: "+20%", color: "bg-rose-500", type: 'push', textCol: 'text-rose-400' });
+        }
+
+        const finalScore = Math.min(Math.max(baseScore + (Math.random() * 0.08 - 0.04), 0.01), 0.99);
+        
+        let status = "Safe";
+        let decisionText = "APPROVED (SAFE EVENT)";
+        let badgeClass = "bg-emerald-500/10 border-emerald-500/20 text-emerald-400";
+
+        if (finalScore > 0.70) {
+          status = "Fraud";
+          decisionText = "BLOCK RESOLUTION (CRITICAL)";
+          badgeClass = "bg-rose-500/10 border-rose-500/20 text-rose-400 font-bold";
+        } else if (finalScore > 0.35) {
+          status = "Review";
+          decisionText = "MANUAL REVIEW REQUESTED";
+          badgeClass = "bg-amber-500/10 border-amber-500/20 text-amber-400 font-bold";
+        }
+
+        if (shapContributions.length < 3) {
+          shapContributions.push({ name: "card1 (Tần suất định danh thẻ sạch)", impact: "-20%", color: "bg-emerald-500", type: 'pull', textCol: 'text-emerald-400' });
+          shapContributions.push({ name: "addr1 (Vùng giao dịch an toàn)", impact: "-18%", color: "bg-emerald-500", type: 'pull', textCol: 'text-emerald-400' });
+        }
+
+        // Đổ dữ liệu vào giao diện
+        document.getElementById('result-badge-card').className = `p-4 rounded-xl border text-center space-y-1 ${badgeClass}`;
+        document.getElementById('result-decision').innerText = decisionText;
+        document.getElementById('result-score').innerText = `${(finalScore * 100).toFixed(1)}%`;
+
+        const shapList = document.getElementById('shap-list');
+        shapList.innerHTML = '';
+        shapContributions.forEach(item => {
+          const numericalVal = item.impact.replace(/[^0-9]/g, '');
+          shapList.innerHTML += `
+            <div class="space-y-1">
+              <div class="flex justify-between text-[11px] font-mono">
+                <span class="text-slate-500">${item.name}</span>
+                <span class="font-bold ${item.textCol}">${item.impact}</span>
+              </div>
+              <div class="w-full bg-[#070a12] h-1.5 rounded-full overflow-hidden">
+                <div class="${item.color} h-full" style="width: ${numericalVal}%; margin-left: ${item.type === 'pull' ? 'auto' : '0'}"></div>
+              </div>
+            </div>
+          `;
+        });
+
+        // Ẩn Loading và hiện kết quả
+        document.getElementById('predict-loading').classList.add('hidden');
+        document.getElementById('predict-content').classList.remove('hidden');
+
+        // Đưa giao dịch này vào nhật ký live
+        const now = new Date();
+        const timestamp = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+        const newTxn = {
+          id: Math.floor(4000000 + Math.random() * 100000),
+          amount: amt,
+          product: product,
+          cardType: `${card4} ${card6}`,
+          email: email,
+          riskScore: parseFloat(finalScore.toFixed(2)),
+          status: status,
+          alertType: "SANDBOX_DIAGNOSIS",
+          timestamp: timestamp
+        };
+        transactionsData = [newTxn, ...transactionsData.slice(0, 4)];
+        renderLiveTransactions();
+
+      }, 1500);
+    });
+
+    // MÔ PHỎNG TẢI LÊN FILE QUÉT HÀNG LOẠT
+    function handleFileChange(event) {
+      const file = event.target.files[0];
+      if (file) {
+        document.getElementById('file-upload-placeholder').classList.add('hidden');
+        document.getElementById('file-upload-success').classList.remove('hidden');
+        
+        document.getElementById('uploaded-file-name').innerText = file.name;
+        document.getElementById('uploaded-file-size').innerText = `${(file.size / 1024).toFixed(1)} KB`;
+        
+        // Hiện nút thực hiện quét
+        document.getElementById('batch-action-container').className = "flex justify-center pt-2";
+        // Ẩn bảng kết quả cũ nếu có
+        document.getElementById('batch-results-container').classList.add('hidden');
+      }
+    }
+
+    function startBatchProcessing() {
+      // Ẩn nút hành động, hiện Loading
+      document.getElementById('batch-action-container').className = "hidden";
+      document.getElementById('batch-loading').classList.remove('hidden');
+
+      const step1 = document.getElementById('step-1');
+      const step2 = document.getElementById('step-2');
+      const step3 = document.getElementById('step-3');
+
+      // Mô phỏng chuỗi tiến trình xử lý Pipeline
+      setTimeout(() => {
+        step1.className = "flex items-center gap-3 text-emerald-400 font-bold done";
+        step1.querySelector('span').className = "w-2.5 h-2.5 rounded-full border-2 border-emerald-400 bg-emerald-400";
+        step2.className = "flex items-center gap-3 text-cyan-400 font-bold active";
+        step2.querySelector('span').className = "w-2.5 h-2.5 rounded-full border-2 border-cyan-400 bg-cyan-400";
+        
+        setTimeout(() => {
+          step2.className = "flex items-center gap-3 text-emerald-400 font-bold done";
+          step2.querySelector('span').className = "w-2.5 h-2.5 rounded-full border-2 border-emerald-400 bg-emerald-400";
+          step3.className = "flex items-center gap-3 text-cyan-400 font-bold active";
+          step3.querySelector('span').className = "w-2.5 h-2.5 rounded-full border-2 border-cyan-400 bg-cyan-400";
+
+          setTimeout(() => {
+            step3.className = "flex items-center gap-3 text-emerald-400 font-bold done";
+            step3.querySelector('span').className = "w-2.5 h-2.5 rounded-full border-2 border-emerald-400 bg-emerald-400";
+
+            // Mô phỏng kết quả phân tích tệp
+            document.getElementById('batch-total-scanned').innerText = "1,540";
+            document.getElementById('batch-fraud-count').innerText = "52";
+            document.getElementById('batch-review-count').innerText = "118";
+            document.getElementById('batch-time').innerText = "1.24s";
+
+            const tbody = document.getElementById('batch-preview-tbody');
+            tbody.innerHTML = '';
+
+            const previewList = Array.from({ length: 6 }, (_, i) => {
+              const score = i === 0 ? 0.98 : i === 1 ? 0.87 : i === 2 ? 0.54 : Math.random() * 0.12;
+              return {
+                row: i + 2,
+                id: `TXN-8014${i}`,
+                amount: (Math.random() * 700 + 15).toFixed(2),
+                card: i % 2 === 0 ? "Visa Credit" : "Mastercard Debit",
+                score: score,
+                status: score > 0.70 ? "Fraud" : score > 0.35 ? "Review" : "Safe"
+              };
+            });
+
+            previewList.forEach(item => {
+              let badge = '';
+              if (item.status === 'Fraud') {
+                badge = `<span class="sec-tag tag-critical">✗ Block</span>`;
+              } else if (item.status === 'Review') {
+                badge = `<span class="sec-tag tag-warning">⚠ Review</span>`;
+              } else {
+                badge = `<span class="sec-tag tag-safe">✓ Safe</span>`;
+              }
+
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td class="p-3 pl-4 font-mono text-slate-500">#${item.row}</td>
+                <td class="p-3 font-semibold text-slate-100">${item.id}</td>
+                <td class="p-3 font-semibold">$${item.amount}</td>
+                <td class="p-3 text-slate-300">${item.card}</td>
+                <td class="p-3 font-bold text-slate-300">${(item.score * 100).toFixed(0)}%</td>
+                <td class="p-3 text-right pr-4">${badge}</td>
+              `;
+              tbody.appendChild(tr);
+            });
+
+            // Ẩn Loading, Hiện Kết quả
+            document.getElementById('batch-loading').classList.add('hidden');
+            document.getElementById('batch-results-container').classList.remove('hidden');
+
+            // Reset các bước về ban đầu
+            step1.className = "flex items-center gap-3 text-cyan-400 font-bold active";
+            step1.querySelector('span').className = "w-2.5 h-2.5 rounded-full border-2 border-cyan-400 bg-cyan-400";
+            step2.className = "flex items-center gap-3 text-slate-500";
+            step2.querySelector('span').className = "w-2.5 h-2.5 rounded-full border-2 border-slate-850";
+            step3.className = "flex items-center gap-3 text-slate-500";
+            step3.querySelector('span').className = "w-2.5 h-2.5 rounded-full border-2 border-slate-850";
+
+          }, 1000);
+        }, 1000);
+      }, 1000);
+    }
+
+    // MÔ PHỎNG TRÒ CHUYỆN VỚI AI COPILOT
+    function renderChatMessages() {
+      const chatContainer = document.getElementById('chat-messages-container');
+      chatContainer.innerHTML = '';
+
+      chatMessages.forEach(msg => {
+        const isBot = msg.role === 'assistant';
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `intel-msg-bubble ${isBot ? 'bot' : 'user'}`;
+        
+        msgDiv.innerHTML = `
+          <div class="intel-avatar ${isBot ? 'bot' : 'user'}">
+            ${isBot ? 'SIEM' : 'DA'}
+          </div>
+          <div class="intel-msg-text">
+            <p>${msg.text}</p>
+          </div>
+        `;
+        chatContainer.appendChild(msgDiv);
+      });
+
+      // Tự động cuộn xuống dưới cùng
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function handleSendChatMessage(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById('chat-input-field');
+      const text = input.value.trim();
+      if (!text) return;
+
+      chatMessages.push({ role: 'user', text: text });
+      input.value = '';
+      renderChatMessages();
+
+      // Giả lập bot phản hồi sau 1.0 giây
+      setTimeout(() => {
+        let reply = "Tôi đã tiếp nhận truy vấn an ninh. Trong bộ dữ liệu IEEE-CIS, các biến C (C1-C14) thể hiện số lượng cuộc gọi liên kết địa chỉ IP/thẻ, các biến D (D1-D15) là thời gian trễ (Time deltas) giữa các hành động.";
+        
+        const lower = text.toLowerCase();
+        if (lower.includes('card')) {
+          reply = "Đối với chuyên viên phân tích rủi ro, `card1` đại diện cho định danh mã ngân hàng phát hành thẻ. Kỹ thuật Feature Engineering khuyến nghị là Gom cụm (Groupby) theo card1 và TransactionAmt để tính Z-Score, nhằm phát hiện sự sai lệch mức chi tiêu bất thường.";
+        } else if (lower.includes('mô hình') || lower.includes('model') || lower.includes('lightgbm') || lower.includes('xgboost')) {
+          reply = "Vì đây là bài toán mất cân bằng dữ liệu cực đoan (~3.5% rủi ro), việc sử dụng LightGBM hoặc CatBoost với cơ chế đánh giá Focal Loss hoặc điều chỉnh tham số scale_pos_weight là bắt buộc. Điều này giúp tối đa hóa chỉ số AUC-ROC thay vì Accuracy thông thường.";
+        } else if (lower.includes('biến v') || lower.includes('v1') || lower.includes('vesta')) {
+          reply = "Các biến V (V1-V339) của đối tác Vesta chứa nhiều giá trị trống (Missing Values) do kỹ thuật đối sánh đa lớp thiết bị. DA nên sử dụng phương án gom cụm PCA hoặc loại bỏ các đặc trưng tương quan chéo (correlation > 0.9) để ngăn chặn hiện tượng Overfitting.";
+        }
+
+        chatMessages.push({ role: 'assistant', text: reply });
+        renderChatMessages();
+      }, 1000);
+    }
+
+    function sendQuickQuestion(questionText) {
+      document.getElementById('chat-input-field').value = questionText;
+      handleSendChatMessage();
+    }
+
+    // KHỞI CHẠY LẦN ĐẦU KHI TRANG WEB TẢI XONG
+    window.onload = function() {
+      renderLiveTransactions();
+      startLiveInterval();
+      drawRealtimeChart();
+      renderChatMessages();
+      lucide.createIcons();
+    }
+  </script>
+</body>
+</html>
